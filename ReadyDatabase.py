@@ -8,14 +8,18 @@ from urllib import request
 
 def readyDatabase():
     # deepinSCVersion = getLastestDSCVersion()
-    deepinSCVersion = "3.0.1+20141230125726~0565641e10"
-    deepinSCUrl = "http://packages.linuxdeepin.com/deepin/pool/main/d/deepin-software-center-data/deepin-software-center-data_%s.tar.gz" % deepinSCVersion
+    #deepinSCVersion = "3.0.1+20141230125726~0565641e10"
+    #deepinSCUrl = "http://packages.linuxdeepin.com/deepin/pool/main/d/deepin-software-center-data/deepin-software-center-data_%s.tar.gz" % deepinSCVersion
+    deepinSCUrl, deepinSCVersion = getLatestPackageUrl()
 
-    print("ready data base")
-    print("deepin-software-center version:%s" % deepinSCUrl)
+    print ("Latest deepin-software-center-data deb url: ", deepinSCUrl)
+    print ("Version: ", deepinSCVersion)
+
+    print("ready data base...")
+    #print("deepin-software-center version:%s" % deepinSCUrl)
 
     fileName = "deepin-software-center-data_%s.tar.gz" % deepinSCVersion
-    if not os.path.exists(os.path.join(os.getcwd(), fileName)): 
+    if not os.path.exists(os.path.join(os.getcwd(), fileName)):
         try:
             response = request.urlopen(deepinSCUrl)
             data = response.read()
@@ -48,6 +52,31 @@ def readyDatabase():
 
     with tarfile.open(os.path.join(dbPath, "dsc-desktop-data.tar.gz")) as tar:
         tar.extract("desktop/desktop2014.db", "db/")
+
+def getLatestPackageUrl():
+
+    packagesFileUrl = "http://packages.linuxdeepin.com/deepin/dists/trusty/main/binary-amd64/Packages"
+    with request.urlopen(packagesFileUrl) as resp:
+        data = resp.read()
+
+    content = data.decode("utf-8")
+
+    meet = False
+    fileName = ""
+    version = ""
+    for line in content.split("\n"):
+        if line.strip() == "Package: deepin-software-center-data":
+            meet = True
+
+        if meet and line.startswith("Version:"):
+            version = line.split("Version:")[1].strip()
+
+        if meet and line.startswith("Filename:"):
+            fileName = line.split("Filename: ")[1]
+            break
+
+    debUrl = "%s%s" % ("http://packages.linuxdeepin.com/deepin/", fileName)
+    return debUrl, version
 
 if __name__ == "__main__" :
     readyDatabase()

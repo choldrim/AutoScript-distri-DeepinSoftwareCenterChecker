@@ -29,7 +29,7 @@ def cleanWorkSpace():
 
 
 if __name__ == "__main__":
-    
+
     try:
         readyWorkSpace()
 
